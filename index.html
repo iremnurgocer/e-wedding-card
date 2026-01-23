@@ -1148,20 +1148,50 @@ footer{
     </div>
   </main>
 
-  <script>
+  <script type="module">
     /********************
-     * CONFIG
+     * FIREBASE (Firestore)
+     * - Everyone can read/write guestbookNotes
+     ********************/
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      serverTimestamp,
+      query,
+      orderBy,
+      limit,
+      onSnapshot,
+      doc,
+      updateDoc,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDTjG_IrC-Ld3c3JvOU8Te9BbVzYTQxuwE",
+      authDomain: "irem-kerem-davetiye.firebaseapp.com",
+      projectId: "irem-kerem-davetiye",
+      storageBucket: "irem-kerem-davetiye.firebasestorage.app",
+      messagingSenderId: "184241377333",
+      appId: "1:184241377333:web:26736ba893379bbbd6617c",
+      measurementId: "G-9L76Q20CF3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    /********************
+     * CONFIG (Page)
      ********************/
     const WEDDING_ISO = "2026-05-30T19:00:00+03:00";
     const MAPS_DEEPLINK = "https://maps.app.goo.gl/rgjQaA3gLvn8DiLfA";
-    const STORAGE_KEY = "irem-kerem-guestbook-v2";
-    const DEVICE_KEY  = "irem-kerem-device-id";
+    const DEVICE_KEY = "irem-kerem-device-id";
 
     /********************
      * HELPERS
      ********************/
     const $ = (id) => document.getElementById(id);
-
     function pad2(n){ return String(n).padStart(2, "0"); }
 
     function escapeHTML(str){
@@ -1210,21 +1240,14 @@ footer{
       scene.classList.add("open");
       hintText.textContent = "✨ Açılıyor...";
 
-      // 1) flap open + letter up (CSS)
-      // 2) kısa bekle, sonra teleport
       setTimeout(() => {
         scene.classList.add("fade-out");
-
-        // main'i göster ama body.ready’i fade ile aç
         main.style.display = "block";
 
         setTimeout(() => {
           document.body.classList.add("ready");
-          // scene’i tamamen kaldır
           scene.remove();
-          // reveal başlat
           startRevealObserver();
-          // sayfayı davete getir
           document.getElementById("davet").scrollIntoView({behavior:"smooth", block:"start"});
         }, 520);
 
@@ -1248,7 +1271,6 @@ footer{
       const link = location.href;
       try{
         await navigator.clipboard.writeText(link);
-        // küçük bir kullanıcı geri bildirimi
         alert("Link kopyalandı ✅");
       }catch{
         const t = document.createElement("input");
@@ -1263,7 +1285,6 @@ footer{
 
     function buildICS(){
       const start = new Date(WEDDING_ISO);
-      // 4 saat varsayalım (19:00 - 23:00)
       const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
 
       const fmt = (d) => {
@@ -1304,19 +1325,14 @@ footer{
     })();
 
     /********************
-     * COUNTDOWN (calendar flip style)
-     ********************/
-    const cdDays  = document.getElementById("cdDays");
-    const cdHours = document.getElementById("cdHours");
-    const cdMins  = document.getElementById("cdMins");
-    const cdSecs  = document.getElementById("cdSecs");
-
-    const weddingDate = new Date(WEDDING_ISO);
-
-
-    /********************
      * COUNTDOWN (simple)
      ********************/
+    const cdDays  = $("cdDays");
+    const cdHours = $("cdHours");
+    const cdMins  = $("cdMins");
+    const cdSecs  = $("cdSecs");
+    const weddingDate = new Date(WEDDING_ISO);
+
     function updateCountdown(){
       const now = new Date();
       const diff = weddingDate.getTime() - now.getTime();
@@ -1340,14 +1356,13 @@ footer{
       cdMins.textContent  = pad2(mins);
       cdSecs.textContent  = pad2(secs);
     }
-
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
-
     /********************
-     * GUESTBOOK (localStorage)
-     * Edit/Delete sadece aynı deviceId için
+     * GUESTBOOK (Firestore)
+     * - Everyone sees everything (onSnapshot)
+     * - Edit/Delete buttons show only for same deviceId
      ********************/
     const noteForm = $("noteForm");
     const guestName = $("guestName");
@@ -1356,20 +1371,9 @@ footer{
     const guestbook = $("guestbook");
     const clearBtn = $("clearBtn");
     const submitBtn = $("submitBtn");
-
     const deviceId = getDeviceId();
 
-    function loadEntries(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const arr = raw ? JSON.parse(raw) : [];
-        return Array.isArray(arr) ? arr : [];
-      }catch{ return []; }
-    }
-
-    function saveEntries(arr){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-    }
+    const NOTES_COL = collection(db, "guestbookNotes");
 
     function flashToast(text){
       toast.textContent = text;
@@ -1385,8 +1389,7 @@ footer{
       submitBtn.dataset.editId = "";
     }
 
-    function renderEntries(){
-      const entries = loadEntries().sort((a,b)=>b.ts - a.ts).slice(0, 60);
+    function renderEntries(entries){
       guestbook.innerHTML = "";
 
       if(entries.length === 0){
@@ -1403,12 +1406,14 @@ footer{
         const div = document.createElement("div");
         div.className = "entry";
 
-        const when = new Date(e.ts).toLocaleString("tr-TR");
+        const when = e.createdAtMs ? new Date(e.createdAtMs).toLocaleString("tr-TR") : "";
+        const edited = e.editedAtMs ? " (düzenlendi)" : "";
+
         div.innerHTML = `
           <div class="entry-head">
             <div>
               <div class="who">${escapeHTML(e.name)}</div>
-              <div class="when">${when}${e.editedTs ? " (düzenlendi)" : ""}</div>
+              <div class="when">${escapeHTML(when)}${edited}</div>
             </div>
             <div class="entry-actions">
               ${canEdit ? `<button class="mini-btn" data-act="edit" data-id="${e.id}" type="button">Düzenle</button>` : ``}
@@ -1421,7 +1426,24 @@ footer{
       }
     }
 
-    noteForm.addEventListener("submit", (e)=>{
+    // Live listen
+    const qNotes = query(NOTES_COL, orderBy("createdAt", "desc"), limit(60));
+    onSnapshot(qNotes, (snap) => {
+      const entries = snap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          name: data.name || "",
+          msg: data.msg || "",
+          owner: data.owner || "",
+          createdAtMs: data.createdAt?.toMillis?.() || null,
+          editedAtMs: data.editedAt?.toMillis?.() || null
+        };
+      });
+      renderEntries(entries);
+    });
+
+    noteForm.addEventListener("submit", async (e)=>{
       e.preventDefault();
 
       const name = (guestName.value||"").trim();
@@ -1438,78 +1460,70 @@ footer{
         return;
       }
 
-      const entries = loadEntries();
       const mode = submitBtn.dataset.mode || "new";
 
-      if(mode === "edit" && submitBtn.dataset.editId){
-        const id = submitBtn.dataset.editId;
-        const idx = entries.findIndex(x => x.id === id);
-
-        if(idx >= 0 && entries[idx].owner === deviceId){
-          entries[idx].name = name;
-          entries[idx].msg = msg;
-          entries[idx].editedTs = Date.now();
-          saveEntries(entries);
-          renderEntries();
+      try{
+        if(mode === "edit" && submitBtn.dataset.editId){
+          const id = submitBtn.dataset.editId;
+          await updateDoc(doc(db, "guestbookNotes", id), {
+            name,
+            msg,
+            editedAt: serverTimestamp()
+          });
           flashToast("Not güncellendi ✅");
           resetForm();
           return;
         }
 
-        flashToast("Bu notu düzenleme yetkin yok.");
+        await addDoc(NOTES_COL, {
+          name,
+          msg,
+          owner: deviceId,
+          createdAt: serverTimestamp(),
+          editedAt: null
+        });
+
+        flashToast("Not eklendi 💛");
         resetForm();
-        return;
+      }catch(err){
+        console.error(err);
+        flashToast("Bir hata oluştu. Tekrar dener misin?");
       }
-
-      entries.push({
-        id: uid(),
-        owner: deviceId,
-        name,
-        msg,
-        ts: Date.now()
-      });
-
-      saveEntries(entries);
-      renderEntries();
-      flashToast("Not eklendi 💛");
-      resetForm();
     });
 
     clearBtn.addEventListener("click", resetForm);
 
-    guestbook.addEventListener("click", (e)=>{
+    guestbook.addEventListener("click", async (e)=>{
       const btn = e.target.closest("button[data-act]");
       if(!btn) return;
 
       const act = btn.dataset.act;
       const id  = btn.dataset.id;
 
-      const entries = loadEntries();
-      const idx = entries.findIndex(x => x.id === id);
-      if(idx < 0) return;
-
-      const item = entries[idx];
-      if(item.owner !== deviceId){
-        flashToast("Bu not sana ait değil.");
-        return;
-      }
-
       if(act === "del"){
         if(confirm("Notu silmek istediğine emin misin?")){
-          entries.splice(idx, 1);
-          saveEntries(entries);
-          renderEntries();
-          flashToast("Not silindi 🗑️");
-          resetForm();
+          try{
+            await deleteDoc(doc(db, "guestbookNotes", id));
+            flashToast("Not silindi 🗑️");
+            resetForm();
+          }catch(err){
+            console.error(err);
+            flashToast("Silinemedi. Yetkin olmayabilir.");
+          }
         }
       }
 
       if(act === "edit"){
-        guestName.value = item.name || "";
-        guestMessage.value = item.msg || "";
+        const card = btn.closest(".entry");
+        const who = card?.querySelector(".who")?.textContent || "";
+        const msg = card?.querySelector(".msg")?.textContent || "";
+
+        guestName.value = who;
+        guestMessage.value = (msg === "💛") ? "" : msg;
         submitBtn.textContent = "Kaydet ✅";
         submitBtn.dataset.mode = "edit";
-        submitBtn.dataset.editId = item.id;
+        submitBtn.dataset.editId = id;
+
         guestName.focus();
         document.getElementById("not").scrollIntoView({behavior:"smooth", block:"start"});
       }
@@ -1518,14 +1532,12 @@ footer{
     /********************
      * INIT
      ********************/
-    renderEntries();
-
-    // Eğer kullanıcı sayfaya #not gibi anchor ile geldiyse otomatik aç
+    // Hash ile gelirse otomatik aç
     if(location.hash && location.hash !== "#top"){
       setTimeout(openInvite, 250);
     }
-
   </script>
+
 </body>
 </html>
 
