@@ -4,36 +4,38 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="description" content="İrem Göçer & Kerem Yılmaz • 30.05.2026 • 19:00 • Gaziantep Öğretmenevi Balo Salonu" />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#0e0b09" />
   <title>İrem & Kerem • E-Davetiye</title>
 
   <!-- Open Graph -->
   <meta property="og:title" content="İrem & Kerem • E-Davetiye" />
   <meta property="og:description" content="30 Mayıs 2026 • 19:00 • Gaziantep Öğretmenevi Balo Salonu" />
   <meta property="og:type" content="website" />
-  <!-- cover görseli (assets/cover.png önerilir) -->
   <meta property="og:image" content="assets/cover.png" />
 
   <!-- Favicon -->
   <link rel="icon" href="assets/favicon.png" />
 
+  <style>
+/* ══════════════════════════════════════
+   VARIABLES
+══════════════════════════════════════ */
+:root {
+  --bg: #ffffff;
+  --ink: #15161a;
+  --muted: #6b7280;
+  --line: rgba(0,0,0,.10);
 
-  <style>:root{
-  --bg:#ffffff;
-  --ink:#15161a;
-  --muted:#6b7280;
-  --line:rgba(0,0,0,.10);
+  --paper: #fffdf9;
+  --paper2: #f7f2ea;
 
-  --paper:#fffdf9;
-  --paper2:#f7f2ea;
+  --wine: #6b1f2a;
+  --wine2: #3a0e15;
+  --wine3: #7a2632;
 
-  --wine:#6b1f2a;
-  --wine2:#3a0e15;
-  --wine3:#7a2632;
-
-  --gold:#caa24c;
-  --gold2:#b88a2b;
-  --gold3:#f0dda0;
+  --gold: #caa24c;
+  --gold2: #b88a2b;
+  --gold3: #f0dda0;
 
   --shadow: 0 30px 90px rgba(0,0,0,.22);
   --shadow2: 0 14px 40px rgba(0,0,0,.12);
@@ -46,465 +48,217 @@
   --script: "Brush Script MT", "Segoe Script", "Apple Chancery", "Snell Roundhand", cursive;
 }
 
-/* =========================
+/* ══════════════════════════════════════
    BASE / RESET
-   ========================= */
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;
-  font-family:var(--sans);
-  color:var(--ink);
+══════════════════════════════════════ */
+* { box-sizing: border-box }
+html { scroll-behavior: smooth }
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--ink);
   background:
     radial-gradient(1200px 700px at 50% -12%, #fff3e7 0%, #ffffff 60%, #ffffff 100%);
-  overflow-x:hidden;
-}
-img{max-width:100%; display:block}
-a{color:inherit}
-button{font-family:inherit}
-
-@media (prefers-reduced-motion: reduce){
-  *{animation:none!important; transition:none!important; scroll-behavior:auto!important}
+  overflow-x: hidden;
 }
 
-.wrap{width:min(1100px, 92vw); margin:0 auto}
-.muted{color:var(--muted)}
-.center{text-align:center}
+/* Scroll kilidi: intro görünürken sayfa kaymasın */
+body:not(.ready) { overflow: hidden; }
 
-/* Sections */
-section{padding: 64px 0}
-@media (max-width: 720px){
-  section{padding: 46px 0}
+img { max-width: 100%; display: block }
+a { color: inherit }
+button { font-family: inherit }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important }
 }
 
-/* Card */
-.card{
+.wrap { width: min(1100px, 92vw); margin: 0 auto }
+.muted { color: var(--muted) }
+.center { text-align: center }
+
+section { padding: 64px 0 }
+@media (max-width: 720px) { section { padding: 46px 0 } }
+
+.card {
   background: rgba(255,255,255,.92);
   border: 1px solid rgba(0,0,0,.10);
   border-radius: var(--radius);
   box-shadow: var(--shadow2);
-  overflow:hidden;
+  overflow: hidden;
 }
-.pad{padding: 28px}
-@media (max-width: 720px){
-  .pad{padding: 18px}
+.pad { padding: 28px }
+@media (max-width: 720px) { .pad { padding: 18px } }
+
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ══════════════════════════════════════
+   VIDEO INTRO
+══════════════════════════════════════ */
+#videoIntro {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 9999;
+  background: #000;
+  /* Beyaz fade için pseudo-element */
 }
 
-/* Reveal */
-.reveal{ opacity:0; transform: translateY(16px); transition: opacity .7s ease, transform .7s ease; }
-.reveal.in{ opacity:1; transform:none; }
+#videoIntro::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .65s ease;
+}
 
-/* =========================
-   TOPBAR (MOBILE SAFE)
-   ========================= */
-.topbar{
-  position:fixed;
+/* Beyaza geçiş tetiklendiğinde */
+#videoIntro.fading::after {
+  opacity: 1;
+}
+
+#introVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ══════════════════════════════════════
+   TOPBAR
+══════════════════════════════════════ */
+.topbar {
+  position: fixed;
   inset: 12px 0 auto 0;
   z-index: 50;
-  pointer-events:none;
-  opacity:0;
+  pointer-events: none;
+  opacity: 0;
   transform: translateY(-8px);
   transition: opacity .5s ease, transform .5s ease;
 }
-body.ready .topbar{opacity:1; transform:none}
-.topbar .wrap{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
+body.ready .topbar { opacity: 1; transform: none }
+.topbar .wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
-.badge{
-  pointer-events:auto;
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding:10px 12px;
-  border-radius:999px;
+.badge {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
   border: 1px solid rgba(0,0,0,.10);
   background: rgba(255,255,255,.82);
   backdrop-filter: blur(10px);
   box-shadow: 0 10px 30px rgba(0,0,0,.06);
   font-size: 13px;
   color: var(--muted);
-  text-decoration:none;
-  user-select:none;
-  white-space:nowrap;
+  text-decoration: none;
+  user-select: none;
+  white-space: nowrap;
   max-width: 46vw;
-  overflow:hidden;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
-.badge strong{color:var(--ink); font-weight:850}
-.badge:hover{color:var(--ink)}
-.dot{width:6px;height:6px;border-radius:999px;background:var(--gold); flex:0 0 auto}
+.badge strong { color: var(--ink); font-weight: 850 }
+.badge:hover { color: var(--ink) }
+.dot { width: 6px; height: 6px; border-radius: 999px; background: var(--gold); flex: 0 0 auto }
 
-@media (max-width: 560px){
-  .topbar .wrap{gap:8px}
-  .badge{font-size:12px; padding:9px 10px; max-width: 54vw}
+@media (max-width: 560px) {
+  .topbar .wrap { gap: 8px }
+  .badge { font-size: 12px; padding: 9px 10px; max-width: 54vw }
 }
 
-/* =========================
+/* ══════════════════════════════════════
    BUTTONS
-   ========================= */
-.actions, .hero-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
+══════════════════════════════════════ */
+.actions, .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 14px;
 }
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 12px 14px;
-  border-radius: 14px;              /* davetiye hissi */
+  border-radius: 14px;
   border: 1px solid rgba(0,0,0,.12);
-  background:#fff;
-  cursor:pointer;
-  font-weight:800;
-  font-size:14px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
   transition: transform .08s ease, box-shadow .18s ease, border-color .18s ease;
-  user-select:none;
-  text-decoration:none;
+  user-select: none;
+  text-decoration: none;
 }
-.btn:hover{
+.btn:hover {
   border-color: rgba(0,0,0,.18);
   box-shadow: 0 10px 22px rgba(0,0,0,.06);
   transform: translateY(-1px);
 }
-.btn.primary{
+.btn.primary {
   border-color: rgba(202,162,76,.55);
   background: linear-gradient(180deg, rgba(202,162,76,.22), rgba(202,162,76,.08));
 }
-.btn.ghost{ background: rgba(255,255,255,.72); }
+.btn.ghost { background: rgba(255,255,255,.72); }
 
-@media (max-width: 420px){
-  .btn{width:100%}
-}
+@media (max-width: 420px) { .btn { width: 100% } }
 
-/* =========================
-   FULLSCREEN ENVELOPE SCENE
-   - Classic envelope geometry
-   - Flap triangle goes down fully
-   - No white leak before open
-   ========================= */
-.scene{
-  position:fixed;
-  inset:0;
-  z-index:999;
-  display:grid;
-  place-items:center;
-  padding: 0;
-  background: radial-gradient(1200px 900px at 50% 35%, rgba(255,255,255,.06), transparent 60%),
-              radial-gradient(900px 650px at 40% 90%, rgba(202,162,76,.06), transparent 55%),
-              #120609;
-}
-.scene-inner{
-  width: 100%;
-  height: 100%;
-  display:grid;
-  place-items:center;
-}
-.scene-title{ display:none; } /* zarf üstünde yazı yok */
-.env-btn{
-  width:100%;
-  border:0;
-  background:transparent;
-  padding:0;
-  cursor:pointer;
-  outline:none;
-  display:grid;
-  place-items:center;
-}
-.env-btn:focus-visible{
-  box-shadow: 0 0 0 5px rgba(202,162,76,.22);
-  border-radius: 18px;
-}
-
-/* Envelope container */
-.envelope{
-  width: min(1100px, 96vw);
-  height: min(720px, 92vh);
-  position:relative;
-  border-radius: 28px;
-  filter: drop-shadow(0 30px 90px rgba(0,0,0,.55));
-  overflow:hidden;
-  transform: translateZ(0);
-  user-select:none;
-}
-
-/* velvet back */
-.env-back{
-  position:absolute; inset:0;
-  border-radius: 28px;
-  background:
-    radial-gradient(900px 520px at 30% 20%, rgba(255,255,255,.10), transparent 60%),
-    radial-gradient(900px 520px at 78% 78%, rgba(0,0,0,.40), transparent 55%),
-    repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0 6px, rgba(0,0,0,.018) 6px 12px),
-    linear-gradient(180deg, var(--wine3) 0%, var(--wine) 45%, var(--wine2) 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.14),
-    inset 0 40px 120px rgba(0,0,0,.35);
-}
-
-/* FRONT layer */
-.env-front{ position:absolute; inset:0; pointer-events:none; }
-
-/* Bottom pocket (classic envelope with diagonal sides) */
-.env-bottom{
-  position:absolute;
-  left:0; right:0; bottom:0;
-  height: 60%;
-  background:
-    radial-gradient(900px 520px at 50% 10%, rgba(255,255,255,.06), transparent 60%),
-    repeating-linear-gradient(120deg, rgba(255,255,255,.03) 0 7px, rgba(0,0,0,.02) 7px 14px),
-    linear-gradient(180deg, var(--wine3) 0%, var(--wine) 55%, var(--wine2) 100%);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
-  overflow:hidden;
-}
-
-/* Left pocket triangle */
-.env-bottom::before{
-  content:"";
-  position:absolute;
-  left:-2px; bottom:-2px;
-  width: 55%;
-  height: 100%;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.12)),
-    linear-gradient(180deg, var(--wine3) 0%, var(--wine) 55%, var(--wine2) 100%);
-  clip-path: polygon(0 100%, 0 0, 100% 100%);
-  opacity:.55;
-  mix-blend-mode: overlay;
-}
-
-/* Right pocket triangle */
-.env-bottom::after{
-  content:"";
-  position:absolute;
-  right:-2px; bottom:-2px;
-  width: 55%;
-  height: 100%;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.12)),
-    linear-gradient(180deg, var(--wine3) 0%, var(--wine) 55%, var(--wine2) 100%);
-  clip-path: polygon(100% 100%, 0 100%, 100% 0);
-  opacity:.55;
-  mix-blend-mode: overlay;
-}
-
-/* Flap = full height triangle, goes down fully */
-.env-flap{
-  position:absolute;
-  inset:0;
-  transform-origin: 50% 0%;
-  transform: rotateX(0deg);
-  transition: transform 950ms cubic-bezier(.2,.92,.2,1);
-  perspective: 1200px;
-}
-.env-flap::before{
-  content:"";
-  position:absolute; inset:0;
-  background:
-    radial-gradient(700px 360px at 50% 20%, rgba(255,255,255,.09), transparent 60%),
-    repeating-linear-gradient(45deg, rgba(255,255,255,.03) 0 6px, rgba(0,0,0,.018) 6px 12px),
-    linear-gradient(180deg, var(--wine3) 0%, var(--wine) 60%, var(--wine2) 100%);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-}
-
-/* Wax seal (gold) */
-.seal{
-  position:absolute;
-  left:50%;
-  top: 56%;
-  transform: translate(-50%, -50%);
-  width: 82px;
-  height: 82px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 30% 28%, rgba(255,255,255,.45), transparent 55%),
-    radial-gradient(circle at 70% 76%, rgba(0,0,0,.22), transparent 60%),
-    linear-gradient(180deg, var(--gold3) 0%, var(--gold) 45%, var(--gold2) 100%);
-  box-shadow:
-    0 18px 34px rgba(0,0,0,.28),
-    inset 0 0 0 1px rgba(255,255,255,.22);
-  display:grid;
-  place-items:center;
-  transition: opacity 320ms ease, transform 420ms ease;
-}
-.seal span{
-  font-family: var(--script);
-  font-size: 26px;
-  color: rgba(70,44,10,.78);
-  text-shadow: 0 1px 0 rgba(255,255,255,.25);
-}
-
-/* Letter (hidden before open) */
-.letter{
-  position:absolute;
-  left: 10%;
-  right: 10%;
-  bottom: 9%;
-  height: 78%;
-  border-radius: 18px;
-  background:
-    radial-gradient(900px 420px at 50% 15%, rgba(202,162,76,.06), transparent 60%),
-    linear-gradient(180deg, var(--paper) 0%, var(--paper2) 100%);
-  border: 1px solid rgba(0,0,0,.10);
-  box-shadow: var(--shadow);
-  display:grid;
-  place-items:center;
-  padding: 22px 18px;
-  opacity: 0;
-  transform: translateY(55%);                 /* tamamen içeride kalsın */
-  transition: transform 950ms cubic-bezier(.2,.92,.2,1), opacity 520ms ease;
-  overflow:hidden;
-}
-.letter::before{
-  content:"";
-  position:absolute; inset:-35%;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(0,0,0,.028), transparent 55%),
-    radial-gradient(circle at 72% 64%, rgba(0,0,0,.02), transparent 55%),
-    repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0 2px, transparent 2px 6px);
-  transform: rotate(-8deg);
-  opacity:.55;
-  pointer-events:none;
-}
-
-.letter-center{
-  position:relative;
-  z-index:2;
-  text-align:center;
-  display:grid;
-  justify-items:center;
-  gap: 10px;
-}
-.monogram{
-  width: 74px;
-  height: 74px;
-  border-radius: 999px;
-  border: 1px solid rgba(184,138,43,.55);
-  display:grid;
-  place-items:center;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(232,208,138,.30), transparent 55%),
-    linear-gradient(180deg, rgba(202,162,76,.20) 0%, rgba(202,162,76,.08) 100%);
-  box-shadow: 0 12px 26px rgba(0,0,0,.08);
-}
-.monogram span{
-  font-family: var(--script);
-  font-size: 28px;
-  color: var(--gold2);
-}
-.letter-title{
-  font-family: var(--serif);
-  font-weight: 760;
-  font-size: 20px;
-  margin:0;
-}
-.letter-sub{
-  margin:0;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-/* Hint */
-.hint{
-  position: fixed;
-  bottom: 22px;
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.14);
-  color: rgba(255,255,255,.86);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.25);
-  font-size: 13px;
-}
-
-/* Open state */
-.scene.open .env-flap{ transform: rotateX(175deg); }
-.scene.open .letter{ opacity:1; transform: translateY(-10%); }
-.scene.open .seal{ opacity:0; transform: translate(-50%, -50%) scale(.92); }
-
-/* Teleport */
-.scene.fade-out{
-  animation: sceneFade .85s ease forwards;
-  pointer-events:none;
-}
-@keyframes sceneFade{
-  0%{opacity:1; transform:none; filter:none}
-  70%{opacity:.16; transform:scale(1.02); filter:blur(.5px)}
-  100%{opacity:0; transform:scale(1.04); filter:blur(2px)}
-}
-
-@media (max-width: 720px){
-  .envelope{
-    width: 96vw;
-    height: 86vh;
-    border-radius: 22px;
-  }
-  .letter{
-    left: 9%;
-    right: 9%;
-    height: 76%;
-  }
-  .seal{ width: 74px; height: 74px; }
-}
-
-/* =========================
+/* ══════════════════════════════════════
    MAIN
-   ========================= */
-main{
-  min-height:100vh;
-  opacity:0;
+══════════════════════════════════════ */
+main {
+  min-height: 100vh;
+  opacity: 0;
   transform: translateY(10px);
   transition: opacity .65s ease, transform .65s ease;
 }
-body.ready main{ opacity:1; transform:none; }
+body.ready main { opacity: 1; transform: none; }
 
-/* =========================
-   HERO (Invitation Cover)
-   ========================= */
-.hero-card{
-  overflow:hidden;
-  position:relative;
+/* ══════════════════════════════════════
+   HERO
+══════════════════════════════════════ */
+.hero-card {
+  overflow: hidden;
+  position: relative;
   border-radius: 28px;
   background:
     radial-gradient(1000px 420px at 20% 0%, rgba(202,162,76,.14), transparent 55%),
     radial-gradient(900px 520px at 120% 30%, rgba(107,31,42,.06), transparent 60%),
     linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.90) 100%);
 }
-.hero-card::before{
-  content:"";
-  position:absolute; inset:-30%;
+.hero-card::before {
+  content: '';
+  position: absolute; inset: -30%;
   background:
     radial-gradient(circle at 20% 30%, rgba(0,0,0,.03), transparent 58%),
     radial-gradient(circle at 70% 60%, rgba(0,0,0,.018), transparent 60%),
     repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0 2px, transparent 2px 7px);
   transform: rotate(8deg);
-  opacity:.55;
-  pointer-events:none;
+  opacity: .55;
+  pointer-events: none;
 }
-.hero-inner{ position:relative; padding: 28px; }
-@media (max-width: 720px){
-  .hero-inner{ padding: 18px; }
-}
+.hero-inner { position: relative; padding: 28px; }
+@media (max-width: 720px) { .hero-inner { padding: 18px; } }
 
-.hero-head{
-  text-align:center;
+.hero-head {
+  text-align: center;
   padding: 6px 10px 18px;
 }
-.hero-kicker{
-  display:inline-block;
+.hero-kicker {
+  display: inline-block;
   font-size: 12px;
-  letter-spacing:.26em;
-  text-transform:uppercase;
+  letter-spacing: .26em;
+  text-transform: uppercase;
   color: var(--muted);
   border: 1px solid rgba(0,0,0,.10);
   border-radius: 999px;
@@ -512,14 +266,14 @@ body.ready main{ opacity:1; transform:none; }
   background: rgba(255,255,255,.70);
   backdrop-filter: blur(8px);
 }
-.hero-title{
+.hero-title {
   margin: 14px 0 8px;
   font-family: var(--serif);
   font-weight: 850;
   font-size: clamp(28px, 4.4vw, 46px);
-  letter-spacing:.01em;
+  letter-spacing: .01em;
 }
-.hero-sub{
+.hero-sub {
   margin: 0 auto;
   max-width: 760px;
   color: var(--muted);
@@ -527,22 +281,20 @@ body.ready main{ opacity:1; transform:none; }
   line-height: 1.7;
 }
 
-/* layout */
-.hero-grid{
-  display:grid;
+.hero-grid {
+  display: grid;
   grid-template-columns: 1.08fr .92fr;
   gap: 18px;
-  align-items:stretch;
+  align-items: stretch;
 }
-@media (max-width: 920px){
-  .hero-head{text-align:left; padding: 0 0 12px;}
-  .hero-grid{grid-template-columns: 1fr;}
+@media (max-width: 920px) {
+  .hero-head { text-align: left; padding: 0 0 12px; }
+  .hero-grid { grid-template-columns: 1fr; }
 }
 
-/* PHOTO */
-.hero-photo{
-  display:flex;
-  flex-direction:column;
+.hero-photo {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   padding: 14px;
   border-radius: 22px;
@@ -552,45 +304,36 @@ body.ready main{ opacity:1; transform:none; }
   border: 1px solid rgba(0,0,0,.10);
   box-shadow: 0 14px 34px rgba(0,0,0,.08);
 }
-.photo-frame{
+.photo-frame {
   border-radius: 20px;
   padding: 12px;
   background: linear-gradient(180deg, rgba(255,255,255,.95) 0%, rgba(250,246,239,.95) 100%);
   border: 1px solid rgba(0,0,0,.10);
-  position:relative;
-  overflow:hidden;
+  position: relative;
+  overflow: hidden;
 }
-.photo-frame::after{
-  content:"";
-  position:absolute; inset:0;
+.photo-frame::after {
+  content: '';
+  position: absolute; inset: 0;
   border-radius: 20px;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.65);
-  pointer-events:none;
+  pointer-events: none;
 }
-.photo-frame img{
-  width:100%;
+.photo-frame img {
+  width: 100%;
   height: 420px;
   object-fit: cover;
   object-position: center top;
   border-radius: 14px;
-  background:#fff;
+  background: #fff;
 }
-@media (max-width: 920px){
-  .photo-frame img{ height: 360px; }
-}
-@media (max-width: 520px){
-  .photo-frame img{ height: 300px; }
-}
-.photo-caption{
-  font-size: 13px;
-  color: var(--muted);
-  padding: 0 6px;
-}
+@media (max-width: 920px) { .photo-frame img { height: 360px; } }
+@media (max-width: 520px)  { .photo-frame img { height: 300px; } }
+.photo-caption { font-size: 13px; color: var(--muted); padding: 0 6px; }
 
-/* RIGHT INFO */
-.hero-info{
-  display:flex;
-  flex-direction:column;
+.hero-info {
+  display: flex;
+  flex-direction: column;
   gap: 14px;
   padding: 18px;
   border-radius: 22px;
@@ -600,112 +343,76 @@ body.ready main{ opacity:1; transform:none; }
     linear-gradient(180deg, rgba(255,255,255,.88) 0%, rgba(255,255,255,.78) 100%);
   box-shadow: 0 14px 34px rgba(0,0,0,.06);
 }
-@media (min-width: 921px){
-  .hero-photo, .hero-info{ min-height: 560px; }
-}
+@media (min-width: 921px) { .hero-photo, .hero-info { min-height: 560px; } }
 
-/* Date block */
-.date-block{
-  display:flex;
-  align-items:center;
+.date-block {
+  display: flex;
+  align-items: center;
   gap: 14px;
-  padding: 14px 14px;
+  padding: 14px;
   border-radius: 18px;
   border: 1px solid rgba(202,162,76,.35);
   background: linear-gradient(180deg, rgba(202,162,76,.16), rgba(202,162,76,.06));
 }
-.date-day{
+.date-day {
   font-family: var(--serif);
   font-size: 88px;
   font-weight: 950;
   line-height: 1;
   color: var(--wine);
 }
-.date-meta{
-  display:flex;
-  flex-direction:column;
-  gap: 2px;
-  margin-top: 6px;
-}
-.date-month{
-  font-size: 22px;
-  font-weight: 900;
-}
-.date-row{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-}
-.date-year{
-  font-size: 18px;
-  color: var(--muted);
-  font-weight: 750;
-}
-.date-weekday{
+.date-meta  { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+.date-month { font-size: 22px; font-weight: 900; }
+.date-row   { display: flex; align-items: center; gap: 10px; }
+.date-year  { font-size: 18px; color: var(--muted); font-weight: 750; }
+.date-weekday {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: rgba(107, 31, 42, .55);
+  color: rgba(107,31,42,.55);
   white-space: nowrap;
 }
-@media (max-width: 420px){
-  .date-day{font-size: 74px;}
-}
+@media (max-width: 420px) { .date-day { font-size: 74px; } }
 
-/* Info chips */
-.info-blocks{
-  display:grid;
+.info-blocks {
+  display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-.info-chip{
-  padding: 12px 12px;
+.info-chip {
+  padding: 12px;
   border-radius: 18px;
   border: 1px solid rgba(0,0,0,.10);
   background: rgba(255,255,255,.78);
 }
-.info-chip.full{ grid-column: 1 / -1; }
-.info-chip .label{
+.info-chip.full { grid-column: 1 / -1; }
+.info-chip .label {
   font-size: 12px;
-  letter-spacing:.18em;
-  text-transform:uppercase;
+  letter-spacing: .18em;
+  text-transform: uppercase;
   color: var(--muted);
   margin-bottom: 6px;
 }
-.info-chip .value{
-  font-size: 15px;
-  font-weight: 850;
-  line-height: 1.45;
-}
-@media (max-width: 520px){
-  .info-blocks{ grid-template-columns: 1fr; }
-}
+.info-chip .value { font-size: 15px; font-weight: 850; line-height: 1.45; }
+@media (max-width: 520px) { .info-blocks { grid-template-columns: 1fr; } }
 
-.hero-families{
-  padding-top: 2px;
-  font-size: 13.5px;
-  color: var(--muted);
-  font-weight: 750;
-}
+.hero-families { padding-top: 2px; font-size: 13.5px; color: var(--muted); font-weight: 750; }
 
-/* =========================
-   COUNTDOWN (SIMPLE + RESPONSIVE)
-   ========================= */
-.countdown-simple{
+/* ══════════════════════════════════════
+   COUNTDOWN
+══════════════════════════════════════ */
+.countdown-simple {
   margin-top: 18px;
-  display:grid;
+  display: grid;
   grid-template-columns: repeat(4, minmax(90px, 1fr));
   gap: 14px;
 }
-@media (max-width: 720px){
-  .countdown-simple{ grid-template-columns: repeat(2, minmax(120px, 1fr)); }
-}
-@media (max-width: 380px){
-  .countdown-simple{ grid-template-columns: 1fr 1fr; gap: 10px; }
-}
-.time-card{
-  position:relative;
+@media (max-width: 720px) { .countdown-simple { grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
+@media (max-width: 380px) { .countdown-simple { grid-template-columns: 1fr 1fr; gap: 10px; } }
+
+.time-card {
+  position: relative;
   padding: 18px 12px;
   border-radius: 18px;
   background:
@@ -713,24 +420,23 @@ body.ready main{ opacity:1; transform:none; }
     linear-gradient(180deg, #fff 0%, #faf5ee 100%);
   border: 1px solid rgba(0,0,0,.12);
   box-shadow: 0 10px 26px rgba(0,0,0,.08);
-  text-align:center;
+  text-align: center;
 }
-.time-card::after{
-  content:"";
-  position:absolute;
-  inset:0;
+.time-card::after {
+  content: '';
+  position: absolute; inset: 0;
   border-radius: 18px;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.6);
-  pointer-events:none;
+  pointer-events: none;
 }
-.time-card .num{
+.time-card .num {
   font-family: var(--serif);
   font-size: clamp(30px, 6vw, 46px);
   font-weight: 900;
   color: var(--ink);
-  line-height:1;
+  line-height: 1;
 }
-.time-card .label{
+.time-card .label {
   margin-top: 8px;
   font-size: 12px;
   letter-spacing: .18em;
@@ -738,281 +444,314 @@ body.ready main{ opacity:1; transform:none; }
   color: var(--muted);
 }
 
-/* =========================
+/* ══════════════════════════════════════
    TIMELINE
-   ========================= */
-.timeline{ display:grid; gap:10px; margin-top:14px; }
-.row{
-  display:flex;
-  align-items:flex-start;
-  gap:12px;
+══════════════════════════════════════ */
+.timeline { display: grid; gap: 10px; margin-top: 14px; }
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   padding: 12px;
   border-radius: 16px;
   border: 1px solid rgba(0,0,0,.10);
   background: rgba(255,255,255,.78);
-}
-.time{
-  min-width: 92px;
-  font-weight: 900;
-  color: var(--ink);
-}
-.row .what{
-  color: var(--muted);
-  font-size: 14px;
-}
-@media (max-width: 520px){
-  .row{flex-direction:column; gap:6px}
-  .time{min-width:auto}
+  transition: transform .28s ease, opacity .28s ease, box-shadow .28s ease;
 }
 
-/* =========================
-   INFO LIST (Konum kısmı)
-   ========================= */
-.info{ display:grid; gap:12px; margin-top:14px; }
-.info-item{
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
+.timeline:hover .row { opacity: .55; transform: scale(.97); }
+.timeline .row:hover {
+  opacity: 1 !important;
+  transform: scale(1.03) !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.12);
+  z-index: 2;
+}
+.timeline .row:hover .time { color: var(--wine); }
+
+@media (hover: none) {
+  .timeline:hover .row { opacity: 1; transform: none; }
+}
+
+.time { min-width: 92px; font-weight: 900; color: var(--ink); }
+.row .what { color: var(--muted); font-size: 14px; }
+
+@media (max-width: 520px) {
+  .row { flex-direction: column; gap: 6px; }
+  .time { min-width: auto; }
+}
+
+/* ══════════════════════════════════════
+   INFO LIST (Konum)
+══════════════════════════════════════ */
+.info { display: grid; gap: 12px; margin-top: 14px; }
+.info-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
   padding: 12px;
   border-radius: 16px;
   border: 1px solid rgba(0,0,0,.10);
   background: rgba(246,247,251,.58);
 }
-.mini{
-  width: 40px; height:40px;
+.mini {
+  width: 40px; height: 40px;
   border-radius: 14px;
-  display:grid; place-items:center;
+  display: grid; place-items: center;
   background: rgba(202,162,76,.18);
   border: 1px solid rgba(202,162,76,.30);
   color: var(--gold2);
   font-weight: 900;
-  user-select:none;
+  user-select: none;
+  flex: 0 0 auto;
 }
-.info-item strong{ display:block; font-size: 14px; }
-.info-item span{ display:block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.info-item strong { display: block; font-size: 14px; }
+.info-item span   { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
 
-.divider{ height:1px; background: rgba(0,0,0,.10); margin: 18px 0; }
+.divider { height: 1px; background: rgba(0,0,0,.10); margin: 18px 0; }
 
-/* =========================
+/* ══════════════════════════════════════
+   ACCOMMODATION
+══════════════════════════════════════ */
+.acc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+@media (max-width: 720px) { .acc-grid { grid-template-columns: 1fr; } }
+
+.acc-card {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,.10);
+  background:
+    radial-gradient(400px 200px at 50% 0%, rgba(202,162,76,.06), transparent 65%),
+    rgba(255,255,255,.82);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.acc-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.acc-card-title {
+  font-weight: 900;
+  font-size: 15px;
+  color: var(--ink);
+  font-family: var(--serif);
+}
+
+.acc-card-body { display: flex; flex-direction: column; gap: 10px; }
+
+.acc-info-row { display: flex; flex-direction: column; gap: 2px; }
+
+.acc-label {
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.acc-value {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.acc-value a { color: inherit; text-decoration: none; }
+.acc-value a:hover { color: var(--wine); }
+
+.acc-note {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0,0,0,.07);
+  line-height: 1.55;
+}
+
+.acc-card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.acc-card-actions .btn {
+  flex: 1;
+  min-width: 76px;
+  font-size: 13px;
+  padding: 10px;
+}
+
+@media (max-width: 400px) { .acc-card-actions .btn { flex: 1 1 100%; } }
+
+/* ══════════════════════════════════════
    GUESTBOOK
-   ========================= */
-form{ display:grid; gap: 12px; margin-top:14px; }
-label{ font-size: 13px; color: var(--muted); }
-input, textarea{
-  width:100%;
+══════════════════════════════════════ */
+form { display: grid; gap: 12px; margin-top: 14px; }
+label { font-size: 13px; color: var(--muted); }
+input, textarea {
+  width: 100%;
   padding: 12px;
   border-radius: 14px;
   border: 1px solid rgba(0,0,0,.12);
-  background:#fff;
-  outline:none;
+  background: #fff;
+  outline: none;
   font-size: 14px;
+  font-family: inherit;
 }
-textarea{ min-height: 120px; resize: vertical; }
-input:focus, textarea:focus{
+textarea { min-height: 120px; resize: vertical; }
+input:focus, textarea:focus {
   box-shadow: 0 0 0 4px rgba(202,162,76,.18);
   border-color: rgba(202,162,76,.50);
 }
-.toast{
+.toast {
   margin-top: 10px;
-  padding: 12px 12px;
+  padding: 12px;
   border-radius: 16px;
   border: 1px solid rgba(34,197,94,.25);
   background: rgba(34,197,94,.08);
   color: #166534;
-  display:none;
+  display: none;
 }
-.toast.show{ display:block; }
+.toast.show { display: block; }
 
-.guestbook{ margin-top: 14px; display:grid; gap: 10px; }
-.entry{
+.guestbook { margin-top: 14px; display: grid; gap: 10px; }
+.entry {
   padding: 12px;
   border-radius: 16px;
   border: 1px solid rgba(0,0,0,.10);
   background: rgba(255,255,255,.82);
 }
-.entry-head{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  align-items:flex-start;
+.entry-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
 }
-.entry .who{ font-weight: 900; font-size: 14px; }
-.entry .when{ color: rgba(107,114,128,.90); font-size: 12px; margin-top:2px; }
-.entry .msg{
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 14px;
-  white-space: pre-wrap;
-}
-.entry-actions{ display:flex; gap:8px; align-items:center; }
-.mini-btn{
-  border:1px solid rgba(0,0,0,.12);
-  background:#fff;
+.entry .who  { font-weight: 900; font-size: 14px; }
+.entry .when { color: rgba(107,114,128,.90); font-size: 12px; margin-top: 2px; }
+.entry .msg  { margin-top: 8px; color: var(--muted); font-size: 14px; white-space: pre-wrap; }
+.entry-actions { display: flex; gap: 8px; align-items: center; }
+
+.mini-btn {
+  border: 1px solid rgba(0,0,0,.12);
+  background: #fff;
   border-radius: 999px;
   padding: 8px 10px;
   font-weight: 900;
   font-size: 12px;
-  cursor:pointer;
-  user-select:none;
+  cursor: pointer;
+  user-select: none;
   transition: transform .08s ease, box-shadow .18s ease, border-color .18s ease;
+  font-family: inherit;
 }
-.mini-btn:hover{
+.mini-btn:hover {
   border-color: rgba(0,0,0,.18);
   box-shadow: 0 10px 20px rgba(0,0,0,.06);
   transform: translateY(-1px);
 }
-.mini-btn.danger{
+.mini-btn.danger {
   border-color: rgba(239,68,68,.35);
   background: rgba(239,68,68,.06);
 }
-@media (max-width: 520px){
-  .entry-head{flex-direction:column}
-  .entry-actions{width:100%; justify-content:flex-start; flex-wrap:wrap}
+@media (max-width: 520px) {
+  .entry-head { flex-direction: column; }
+  .entry-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
 }
 
-/* =========================
+/* ══════════════════════════════════════
    FOOTER
-   ========================= */
-.pill{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding:10px 14px;
-  border:1px solid rgba(0,0,0,.10);
-  border-radius:999px;
+══════════════════════════════════════ */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 999px;
   background: rgba(255,255,255,.78);
   backdrop-filter: blur(8px);
   box-shadow: 0 10px 30px rgba(0,0,0,.06);
   font-size: 13px;
   color: var(--muted);
-  user-select:none;
+  user-select: none;
 }
-footer{
+footer {
   padding: 34px 0 64px;
-  text-align:center;
+  text-align: center;
   color: var(--muted);
   font-size: 13px;
 }
-/* =========================
-   TIMELINE HOVER EFFECT
-   ========================= */
-.timeline {
-  display: grid;
-  gap: 10px;
-}
-
-/* default state */
-.timeline .row {
-  transition:
-    transform .28s ease,
-    opacity .28s ease,
-    box-shadow .28s ease;
-}
-
-/* biri hover olunca herkes biraz sakinleşsin */
-.timeline:hover .row {
-  opacity: .55;
-  transform: scale(.97);
-}
-
-/* hover edilen satır */
-.timeline .row:hover {
-  opacity: 1;
-  transform: scale(1.03);
-  box-shadow: 0 18px 40px rgba(0,0,0,.12);
-  z-index: 2;
-}
-
-/* hover edilen satırın saati biraz vurgulansın */
-.timeline .row:hover .time {
-  color: var(--wine);
-}
-
-/* mobilde hover yok → bozmasın */
-@media (hover: none) {
-  .timeline:hover .row {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-</style>
+  </style>
 </head>
 
 <body>
-  <!-- Topbar -->
+
+  <!-- ═══════════════════════════════════════
+       VIDEO INTRO
+       Video bittikten sonra beyaz fade ile ana siteye geçer.
+       Hata durumunda da otomatik geçiş yapılır.
+  ═══════════════════════════════════════ -->
+  <div id="videoIntro">
+    <video
+      id="introVideo"
+      autoplay
+      muted
+      playsinline
+      preload="auto"
+    >
+      <source src="Açılış.mp4" type="video/mp4" />
+    </video>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       TOPBAR
+  ═══════════════════════════════════════ -->
   <div class="topbar" aria-hidden="false">
     <div class="wrap">
       <a class="badge" href="#davet" title="Davetiyeye git">
         <span class="dot" aria-hidden="true"></span>
         <span><strong>30 Mayıs 2026</strong> • 19:00 • Gaziantep</span>
       </a>
-      <a class="badge" href="#not" title="Not bırak">
-        💌 Not Bırak
-      </a>
+      <a class="badge" href="#not" title="Not bırak">💌 Not Bırak</a>
     </div>
   </div>
 
-  <!-- FULLSCREEN ENVELOPE (first view) -->
-  <div class="scene" id="scene" role="dialog" aria-label="Mühürlü davetiye zarfı">
-    <div class="scene-inner">
-      <div class="scene-title">
-        <div class="kicker">E-DAVETİYE</div>
-        <div class="names">İrem Göçer &amp; Kerem Yılmaz</div>
-        <p class="sub">Yılmaz ve Göçer aileleri, bu mutlu günümüzde sizleri aramızda görmekten onur duyar.</p>
-      </div>
-
-      <button class="env-btn" id="openBtn" aria-label="Zarfı aç">
-        <div class="envelope" aria-hidden="false">
-          <div class="env-back"></div>
-
-          <div class="letter" aria-hidden="true">
-            <div class="letter-center">
-              <div class="monogram" aria-hidden="true"><span>İK</span></div>
-              <p class="letter-title">Davetlisiniz</p>
-              <p class="letter-sub">Zarfı açmak için tıklayın</p>
-            </div>
-          </div>
-
-          <div class="env-front" aria-hidden="true">
-            <div class="env-flap"></div>
-            <div class="env-bottom"></div>
-            <div class="seal"><span>İK</span></div>
-          </div>
-        </div>
-      </button>
-
-      <div class="hint" id="hintText">💌 Mühürlü zarfa dokun → davetiye açılır</div>
-    </div>
-  </div>
-
-  <!-- MAIN INVITE (hidden until teleport) -->
+  <!-- ═══════════════════════════════════════
+       ANA DAVETİYE İÇERİĞİ
+  ═══════════════════════════════════════ -->
   <main id="main" style="display:none;">
     <div class="wrap" id="davet">
 
-      <!-- HERO -->
+      <!-- ── HERO ── -->
       <section class="reveal" data-reveal>
         <div class="card hero-card">
           <div class="hero-inner">
 
             <div class="hero-head">
               <div class="hero-kicker">ETKİNLİK</div>
-              <h1 class="hero-title">İrem &amp; Kerem’in Düğünü</h1>
+              <h1 class="hero-title">İrem &amp; Kerem'in Düğünü</h1>
               <p class="hero-sub">
                 Yılmaz ve Göçer aileleri olarak bu özel günümüzde sizleri aramızda görmekten mutluluk duyarız.
               </p>
             </div>
 
             <div class="hero-grid">
-              <!-- Left: photo/illustration -->
+
+              <!-- Fotoğraf -->
               <div class="hero-photo">
                 <div class="photo-frame">
-                  <img src="assets/iremvekerem.png" alt="İrem ve Kerem" />
+                  <img src="assets/iremvekerem.png" alt="İrem ve Kerem" width="560" height="420" />
                 </div>
                 <div class="photo-caption">Gaziantep • Öğretmenevi Balo Salonu</div>
               </div>
 
-              <!-- Right: date + info -->
+              <!-- Tarih ve bilgi -->
               <div class="hero-info">
                 <div class="date-block" aria-label="Tarih">
                   <div class="date-day">30</div>
@@ -1030,7 +769,6 @@ footer{
                     <div class="label">Saat</div>
                     <div class="value">19:00</div>
                   </div>
-
                   <div class="info-chip">
                     <div class="label">Mekân</div>
                     <div class="value">
@@ -1038,7 +776,6 @@ footer{
                       <span class="muted" style="font-weight:600">Balo Salonu</span>
                     </div>
                   </div>
-
                   <div class="info-chip full">
                     <div class="label">Adres</div>
                     <div class="value">
@@ -1056,18 +793,17 @@ footer{
                   <button class="btn ghost" id="copyBtn" type="button">🔗 Linki Kopyala</button>
                 </div>
               </div>
-            </div>
 
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- COUNTDOWN -->
+      <!-- ── COUNTDOWN ── -->
       <section class="reveal" data-reveal>
         <div class="card">
           <div class="pad center">
             <h2>Geri Sayım</h2>
-
             <div class="countdown-simple" aria-label="Geri sayım">
               <div class="time-card">
                 <div class="num" id="cdDays">—</div>
@@ -1090,26 +826,25 @@ footer{
         </div>
       </section>
 
-      <!-- TIMELINE -->
+      <!-- ── TIMELINE ── -->
       <section class="reveal" data-reveal>
         <div class="card">
           <div class="pad">
             <h2>Akış</h2>
             <p class="muted" style="margin:0;">Düğün programı</p>
-
             <div class="timeline" aria-label="Program akışı">
               <div class="row"><div class="time">19:00</div><div class="what">Karşılama</div></div>
-              <div class="row"><div class="time">20:00</div><div class="what">Düğün merasimi</div></div>
-              <div class="row"><div class="time">20:30</div><div class="what">Yemek</div></div>
-              <div class="row"><div class="time">21:00</div><div class="what">Dans</div></div>
-              <div class="row"><div class="time">22:30</div><div class="what">Eğlence devam</div></div>
-              <div class="row"><div class="time">Sonrası</div><div class="what">Fotoğraflar ✨</div></div>
+              <div class="row"><div class="time">20:00</div><div class="what">Düğün</div></div>
+              <div class="row"><div class="time">21:00</div><div class="what">Pasta</div></div>
+              <div class="row"><div class="time">21:30</div><div class="what">Takı</div></div>
+              <div class="row"><div class="time">22:00</div><div class="what">Eğlenceye Devam</div></div>
+              <div class="row"><div class="time">Sonrasında</div><div class="what">Fotoğraf ✨</div></div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- LOCATION -->
+      <!-- ── KONUM ── -->
       <section class="reveal" data-reveal id="konum">
         <div class="card">
           <div class="pad">
@@ -1122,20 +857,8 @@ footer{
                 <div>
                   <strong>Adres</strong>
                   <span>
-                    15 Temmuz, Davut Gül Caddesi No:5,<br>
+                    15 Temmuz, Davut Gül Caddesi No:5,<br />
                     27010 Şahinbey / Gaziantep
-                  </span>
-                </div>
-              </div>
-
-              <!-- REZERVASYON -->
-              <div class="info-item" role="listitem">
-                <div class="mini" aria-hidden="true">🛎️</div>
-                <div>
-                  <strong>Konaklama &amp; Rezervasyon</strong>
-                  <span>
-                    Dileyen misafirlerimiz Öğretmenevi’nden konaklama için rezervasyon yaptırabilir.<br>
-                    <strong>Tel: <a href="tel:4449127">444 91 27</a></strong>
                   </span>
                 </div>
               </div>
@@ -1143,15 +866,33 @@ footer{
 
             <div class="actions">
               <a class="btn primary" id="mapsBtn2" target="_blank" rel="noopener" href="#">📍 Haritada Aç</a>
-              <a class="btn" href="tel:4449127">📞 Rezervasyon Ara</a>
+              <a class="btn" href="#konaklama">🏨 Konaklama</a>
               <a class="btn" href="#not">💌 Not Bırak</a>
             </div>
           </div>
         </div>
       </section>
 
+      <!-- ── KONAKLAMA BİLGİLERİ ──
+           ═══════════════════════════════════════════════
+           KONAKLAMA VERİLERİ — JS tarafındaki ACCOMMODATION
+           dizisini düzenleyerek kolayca güncelleyebilirsin.
+           ═══════════════════════════════════════════════ -->
+      <section class="reveal" data-reveal id="konaklama">
+        <div class="card">
+          <div class="pad">
+            <h2>Konaklama Bilgileri</h2>
+            <p class="muted" style="margin:0 0 4px;">
+              Konaklamak isteyen misafirlerimiz, düğünden 20 gün önce —
+              <strong>11 Mayıs 2026'dan itibaren</strong> —
+              hafta içi mesai saatleri içerisinde ilgili tesislerle iletişime geçerek rezervasyon yapabilirler.
+            </p>
+            <div class="acc-grid" id="accommodation-cards"></div>
+          </div>
+        </div>
+      </section>
 
-      <!-- GUESTBOOK -->
+      <!-- ── MİSAFİR DEFTERİ ── -->
       <section class="reveal" data-reveal id="not">
         <div class="card">
           <div class="pad">
@@ -1163,32 +904,29 @@ footer{
                 <label for="guestName">İsim Soyisim <span style="color:var(--gold2)">*</span></label>
                 <input id="guestName" name="guestName" type="text" required maxlength="60" placeholder="Örn: Ayşe Yılmaz" />
               </div>
-
               <div>
                 <label for="guestMessage">Mesajın (opsiyonel)</label>
                 <textarea id="guestMessage" name="guestMessage" maxlength="500" placeholder="Bize tatlı bir not bırak…"></textarea>
               </div>
-
               <div class="actions" style="margin-top:6px;">
                 <button class="btn primary" type="submit" id="submitBtn">Gönder ✨</button>
                 <button class="btn" type="button" id="clearBtn">Temizle</button>
               </div>
-
               <div class="toast" id="toast">Teşekkürler! Notun eklendi 💛</div>
               <p class="muted" style="font-size:12.8px;margin:10px 0 0;">
-                Not: “IP’ye göre sahiplik” statik sitede mümkün olmadığı için, düzenle/sil yetkisi cihaz kimliğiyle sağlanır.
+                Not: Düzenle/sil yetkisi cihaz kimliğiyle sağlanır.
               </p>
             </form>
 
             <div class="divider"></div>
 
-            <h3 style="margin:0 0 10px; font-family:var(--serif); font-size:22px;">Notlar</h3>
+            <h3 style="margin:0 0 10px;font-family:var(--serif);font-size:22px;">Notlar</h3>
             <div class="guestbook" id="guestbook" aria-label="Notlar listesi"></div>
           </div>
         </div>
       </section>
 
-      <!-- FOOTER -->
+      <!-- ── FOOTER ── -->
       <footer class="reveal" data-reveal>
         <div class="pill">
           <span class="dot" aria-hidden="true"></span>
@@ -1202,10 +940,9 @@ footer{
   </main>
 
   <script type="module">
-    /********************
+    /* ══════════════════════════════════════════════
      * FIREBASE (Firestore)
-     * - Everyone can read/write guestbookNotes
-     ********************/
+     * ══════════════════════════════════════════════ */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import {
       getFirestore,
@@ -1222,110 +959,154 @@ footer{
     } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyDTjG_IrC-Ld3c3JvOU8Te9BbVzYTQxuwE",
-      authDomain: "irem-kerem-davetiye.firebaseapp.com",
-      projectId: "irem-kerem-davetiye",
-      storageBucket: "irem-kerem-davetiye.firebasestorage.app",
+      apiKey:            "AIzaSyDTjG_IrC-Ld3c3JvOU8Te9BbVzYTQxuwE",
+      authDomain:        "irem-kerem-davetiye.firebaseapp.com",
+      projectId:         "irem-kerem-davetiye",
+      storageBucket:     "irem-kerem-davetiye.firebasestorage.app",
       messagingSenderId: "184241377333",
-      appId: "1:184241377333:web:26736ba893379bbbd6617c",
-      measurementId: "G-9L76Q20CF3"
+      appId:             "1:184241377333:web:26736ba893379bbbd6617c",
+      measurementId:     "G-9L76Q20CF3"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db  = getFirestore(app);
 
-    /********************
-     * CONFIG (Page)
-     ********************/
-    const WEDDING_ISO = "2026-05-30T19:00:00+03:00";
+    /* ══════════════════════════════════════════════
+     * KONAKLAMA VERİLERİ
+     * Telefon, adres veya link değişirse buradan güncelle.
+     * ══════════════════════════════════════════════ */
+    const ACCOMMODATION = [
+      {
+        icon:          "🏫",
+        name:          "Gaziantep Öğretmenevi",
+        phoneLabel:    "Rezervasyon",
+        phone:         "4449127",
+        phoneDisplay:  "444 91 27",
+        phone2:        null,
+        phone2Display: null,
+        address:       "15 Temmuz Mahallesi, Davut Gül Caddesi No:5, Şehitkamil / Gaziantep",
+        website:       "https://gaziantepogretmenevi.meb.k12.tr/",
+        mapsQuery:     "Gaziantep Öğretmenevi Balo Salonu Şehitkamil",
+        note:          "Güncel uygunluk ve ücret bilgisi için tesisle iletişime geçilmesi önerilir."
+      },
+      {
+        icon:          "🏢",
+        name:          "Gaziantep Polisevi",
+        phoneLabel:    "Telefon",
+        phone:         "03423600400",
+        phoneDisplay:  "0342 360 04 00",
+        phone2:        "05053182740",
+        phone2Display: "0505 318 27 40",
+        address:       "Osmangazi Mahallesi, 56062. Cadde No:23, 27080 Şehitkamil / Gaziantep",
+        website:       "https://www.gaziantep.pol.tr/gaziantep-pol-evi",
+        mapsQuery:     "Gaziantep Polisevi Şehitkamil",
+        note:          "Güncel uygunluk ve ücret bilgisi için tesisle iletişime geçilmesi önerilir."
+      }
+    ];
+
+    /* ══════════════════════════════════════════════
+     * SAYFA KONFİGÜRASYONU
+     * ══════════════════════════════════════════════ */
+    const WEDDING_ISO   = "2026-05-30T19:00:00+03:00";
     const MAPS_DEEPLINK = "https://maps.app.goo.gl/rgjQaA3gLvn8DiLfA";
-    const DEVICE_KEY = "irem-kerem-device-id";
+    const DEVICE_KEY    = "irem-kerem-device-id";
 
-    /********************
-     * HELPERS
-     ********************/
+    /* ══════════════════════════════════════════════
+     * YARDIMCI FONKSİYONLAR
+     * ══════════════════════════════════════════════ */
     const $ = (id) => document.getElementById(id);
-    function pad2(n){ return String(n).padStart(2, "0"); }
 
-    function escapeHTML(str){
+    function pad2(n) { return String(n).padStart(2, "0"); }
+
+    function escapeHTML(str) {
       return String(str).replace(/[&<>"']/g, s => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[s]));
     }
 
-    function uid(){
+    function uid() {
       return (crypto?.randomUUID?.() || ("id-" + Math.random().toString(16).slice(2) + Date.now()));
     }
 
-    function getDeviceId(){
+    function getDeviceId() {
       let d = localStorage.getItem(DEVICE_KEY);
-      if(!d){
-        d = uid();
-        localStorage.setItem(DEVICE_KEY, d);
-      }
+      if (!d) { d = uid(); localStorage.setItem(DEVICE_KEY, d); }
       return d;
     }
 
-    /********************
-     * ENVELOPE OPEN + TELEPORT
-     ********************/
-    const scene = $("scene");
-    const openBtn = $("openBtn");
-    const hintText = $("hintText");
-    const main = $("main");
+    /* ══════════════════════════════════════════════
+     * VIDEO INTRO → ANA SITEYE GEÇİŞ
+     * ══════════════════════════════════════════════ */
+    const videoIntro = $("videoIntro");
+    const introVideo = $("introVideo");
+    const main       = $("main");
 
-    function startRevealObserver(){
-      const revealEls = Array.from(document.querySelectorAll("[data-reveal]"));
+    function startRevealObserver() {
       const io = new IntersectionObserver((entries) => {
-        for(const ent of entries){
-          if(ent.isIntersecting){
-            ent.target.classList.add("in");
-            io.unobserve(ent.target);
-          }
+        for (const ent of entries) {
+          if (ent.isIntersecting) { ent.target.classList.add("in"); io.unobserve(ent.target); }
         }
-      }, {threshold:0.12});
-      revealEls.forEach(el => io.observe(el));
+      }, { threshold: 0.12 });
+      document.querySelectorAll("[data-reveal]").forEach(el => io.observe(el));
     }
 
-    function openInvite(){
-      if(scene.classList.contains("open")) return;
+    let transitionDone = false;
 
-      scene.classList.add("open");
-      hintText.textContent = "✨ Açılıyor...";
+    function transitionToMain() {
+      /* Çift çağrımı önle */
+      if (transitionDone) return;
+      transitionDone = true;
 
+      /* 1. Beyaz fade başlat */
+      videoIntro.classList.add("fading");
+
+      /* 2. Fade tamamlandıktan sonra ana içeriği göster */
       setTimeout(() => {
-        scene.classList.add("fade-out");
         main.style.display = "block";
+        document.body.classList.add("ready"); /* scroll kilidi kalkar, main + topbar görünür */
 
+        /* 3. Kısa gecikme sonra intro tamamen kaldır */
         setTimeout(() => {
-          document.body.classList.add("ready");
-          scene.remove();
+          videoIntro.remove();
           startRevealObserver();
-          document.getElementById("davet").scrollIntoView({behavior:"smooth", block:"start"});
-        }, 520);
+        }, 80);
 
-      }, 820);
+      }, 680); /* fade süresiyle (.65s = 650ms) örtüşür */
     }
 
-    openBtn.addEventListener("click", openInvite);
-    openBtn.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openInvite(); }
-    });
+    /* Video bitişinde geçiş yap */
+    introVideo.addEventListener("ended", transitionToMain);
 
-    /********************
-     * MAPS + SHARE + ICS
-     ********************/
-    const mapsBtn = $("mapsBtn");
-    const mapsBtn2 = $("mapsBtn2");
-    mapsBtn.href = MAPS_DEEPLINK;
-    mapsBtn2.href = MAPS_DEEPLINK;
+    /* Video yüklenemez veya hata verirse de geçiş yap */
+    introVideo.addEventListener("error", transitionToMain);
+
+    /* Güvenlik: video 60 saniye içinde bitmezse geçiş yap */
+    const safetyTimer = setTimeout(transitionToMain, 60000);
+    introVideo.addEventListener("ended", () => clearTimeout(safetyTimer));
+    introVideo.addEventListener("error", () => clearTimeout(safetyTimer));
+
+    /* Autoplay engellenmişse (ses kapalı olsa bile bazı tarayıcılar) fallback */
+    const playPromise = introVideo.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        /* Otomatik oynatma engellenirse video başlamaz — ana siteye doğrudan geç */
+        clearTimeout(safetyTimer);
+        transitionToMain();
+      });
+    }
+
+    /* ══════════════════════════════════════════════
+     * HARITA / PAYLAŞ / TAKVİM
+     * ══════════════════════════════════════════════ */
+    $("mapsBtn").href  = MAPS_DEEPLINK;
+    $("mapsBtn2").href = MAPS_DEEPLINK;
 
     $("copyBtn").addEventListener("click", async () => {
       const link = location.href;
-      try{
+      try {
         await navigator.clipboard.writeText(link);
         alert("Link kopyalandı ✅");
-      }catch{
+      } catch {
         const t = document.createElement("input");
         t.value = link;
         document.body.appendChild(t);
@@ -1336,21 +1117,19 @@ footer{
       }
     });
 
-    function buildICS(){
+    function buildICS() {
       const start = new Date(WEDDING_ISO);
-      const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+      const end   = new Date(start.getTime() + 4 * 60 * 60 * 1000);
 
-      const fmt = (d) => {
-        const yyyy = d.getFullYear();
-        const mm = pad2(d.getMonth()+1);
-        const dd = pad2(d.getDate());
-        const hh = pad2(d.getHours());
-        const mi = pad2(d.getMinutes());
-        const ss = pad2(d.getSeconds());
-        return `${yyyy}${mm}${dd}T${hh}${mi}${ss}`;
-      };
+      const fmtUTC = (d) =>
+        d.getUTCFullYear() +
+        pad2(d.getUTCMonth() + 1) +
+        pad2(d.getUTCDate()) + "T" +
+        pad2(d.getUTCHours()) +
+        pad2(d.getUTCMinutes()) +
+        pad2(d.getUTCSeconds()) + "Z";
 
-      const lines = [
+      return [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
         "PRODID:-//IremKerem//E-Davetiye//TR",
@@ -1358,110 +1137,138 @@ footer{
         "METHOD:PUBLISH",
         "BEGIN:VEVENT",
         `UID:irem-kerem-${Date.now()}@e-wedding-card`,
-        `DTSTAMP:${fmt(new Date())}`,
-        `DTSTART:${fmt(start)}`,
-        `DTEND:${fmt(end)}`,
+        `DTSTAMP:${fmtUTC(new Date())}`,
+        `DTSTART:${fmtUTC(start)}`,
+        `DTEND:${fmtUTC(end)}`,
         "SUMMARY:İrem & Kerem - Düğün",
         "DESCRIPTION:İrem Göçer & Kerem Yılmaz düğün davetiyesi",
-        "LOCATION:Gaziantep Öğretmenevi Balo Salonu, 15 Temmuz, Davut Gül Caddesi No:5, Şahinbey/Gaziantep",
+        "LOCATION:Gaziantep Öğretmenevi Balo Salonu\\, 15 Temmuz Davut Gül Caddesi No:5\\, Şahinbey/Gaziantep",
         "END:VEVENT",
         "END:VCALENDAR"
-      ];
-      return lines.join("\r\n");
+      ].join("\r\n");
     }
 
-    (function setICSLink(){
-      const ics = buildICS();
-      const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      $("icsBtn").href = url;
+    (function setICSLink() {
+      const blob = new Blob([buildICS()], { type: "text/calendar;charset=utf-8" });
+      $("icsBtn").href = URL.createObjectURL(blob);
     })();
 
-    /********************
-     * COUNTDOWN (simple)
-     ********************/
-    const cdDays  = $("cdDays");
-    const cdHours = $("cdHours");
-    const cdMins  = $("cdMins");
-    const cdSecs  = $("cdSecs");
+    /* ══════════════════════════════════════════════
+     * GERİ SAYIM
+     * ══════════════════════════════════════════════ */
     const weddingDate = new Date(WEDDING_ISO);
 
-    function updateCountdown(){
-      const now = new Date();
-      const diff = weddingDate.getTime() - now.getTime();
-
-      if(diff <= 0){
-        cdDays.textContent  = "0";
-        cdHours.textContent = "00";
-        cdMins.textContent  = "00";
-        cdSecs.textContent  = "00";
+    function updateCountdown() {
+      const diff = weddingDate.getTime() - Date.now();
+      if (diff <= 0) {
+        $("cdDays").textContent  = "0";
+        $("cdHours").textContent = "00";
+        $("cdMins").textContent  = "00";
+        $("cdSecs").textContent  = "00";
+        clearInterval(cdInterval);
         return;
       }
-
-      const totalSeconds = Math.floor(diff / 1000);
-      const days  = Math.floor(totalSeconds / (3600 * 24));
-      const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-      const mins  = Math.floor((totalSeconds % 3600) / 60);
-      const secs  = totalSeconds % 60;
-
-      cdDays.textContent  = String(days);
-      cdHours.textContent = pad2(hours);
-      cdMins.textContent  = pad2(mins);
-      cdSecs.textContent  = pad2(secs);
+      const total = Math.floor(diff / 1000);
+      $("cdDays").textContent  = String(Math.floor(total / 86400));
+      $("cdHours").textContent = pad2(Math.floor((total % 86400) / 3600));
+      $("cdMins").textContent  = pad2(Math.floor((total % 3600) / 60));
+      $("cdSecs").textContent  = pad2(total % 60);
     }
     updateCountdown();
-    setInterval(updateCountdown, 1000);
+    const cdInterval = setInterval(updateCountdown, 1000);
 
-    /********************
-     * GUESTBOOK (Firestore)
-     * - Everyone sees everything (onSnapshot)
-     * - Edit/Delete buttons show only for same deviceId
-     ********************/
-    const noteForm = $("noteForm");
-    const guestName = $("guestName");
-    const guestMessage = $("guestMessage");
-    const toast = $("toast");
-    const guestbook = $("guestbook");
-    const clearBtn = $("clearBtn");
-    const submitBtn = $("submitBtn");
-    const deviceId = getDeviceId();
+    /* ══════════════════════════════════════════════
+     * KONAKLAMA KARTLARI
+     * ══════════════════════════════════════════════ */
+    function renderAccommodation() {
+      const container = $("accommodation-cards");
+      if (!container) return;
 
-    const NOTES_COL = collection(db, "guestbookNotes");
+      container.innerHTML = ACCOMMODATION.map(place => {
+        const phoneRows = place.phone2
+          ? `<div class="acc-info-row">
+               <span class="acc-label">${escapeHTML(place.phoneLabel)}</span>
+               <span class="acc-value">
+                 <a href="tel:${escapeHTML(place.phone)}">${escapeHTML(place.phoneDisplay)}</a>
+                 &nbsp;/&nbsp;
+                 <a href="tel:${escapeHTML(place.phone2)}">${escapeHTML(place.phone2Display)}</a>
+               </span>
+             </div>`
+          : `<div class="acc-info-row">
+               <span class="acc-label">${escapeHTML(place.phoneLabel)}</span>
+               <span class="acc-value"><a href="tel:${escapeHTML(place.phone)}">${escapeHTML(place.phoneDisplay)}</a></span>
+             </div>`;
 
-    function flashToast(text){
-      toast.textContent = text;
-      toast.classList.add("show");
-      setTimeout(()=>toast.classList.remove("show"), 2200);
+        const mapsURL = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(place.mapsQuery);
+
+        return `
+          <div class="acc-card">
+            <div class="acc-card-header">
+              <div class="mini" aria-hidden="true">${escapeHTML(place.icon)}</div>
+              <div class="acc-card-title">${escapeHTML(place.name)}</div>
+            </div>
+            <div class="acc-card-body">
+              ${phoneRows}
+              <div class="acc-info-row">
+                <span class="acc-label">Adres</span>
+                <span class="acc-value">${escapeHTML(place.address)}</span>
+              </div>
+              <div class="acc-note">${escapeHTML(place.note)}</div>
+            </div>
+            <div class="acc-card-actions">
+              <a class="btn" href="tel:${escapeHTML(place.phone)}">📞 Ara</a>
+              <a class="btn" href="${escapeHTML(place.website)}" target="_blank" rel="noopener noreferrer">🌐 Web Sitesi</a>
+              <a class="btn primary" href="${escapeHTML(mapsURL)}" target="_blank" rel="noopener noreferrer">📍 Haritada Aç</a>
+            </div>
+          </div>`;
+      }).join("");
     }
 
-    function resetForm(){
+    renderAccommodation();
+
+    /* ══════════════════════════════════════════════
+     * MİSAFİR DEFTERİ (Firestore)
+     * ══════════════════════════════════════════════ */
+    const noteForm  = $("noteForm");
+    const guestName = $("guestName");
+    const guestMsg  = $("guestMessage");
+    const toast     = $("toast");
+    const guestbook = $("guestbook");
+    const clearBtn  = $("clearBtn");
+    const submitBtn = $("submitBtn");
+    const deviceId  = getDeviceId();
+    const NOTES_COL = collection(db, "guestbookNotes");
+
+    function flashToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function resetForm() {
       noteForm.reset();
       guestName.focus();
-      submitBtn.textContent = "Gönder ✨";
-      submitBtn.dataset.mode = "new";
+      submitBtn.textContent    = "Gönder ✨";
+      submitBtn.dataset.mode   = "new";
       submitBtn.dataset.editId = "";
     }
 
-    function renderEntries(entries){
+    function renderEntries(entries) {
       guestbook.innerHTML = "";
-
-      if(entries.length === 0){
+      if (entries.length === 0) {
         const empty = document.createElement("div");
-        empty.className = "muted";
+        empty.className   = "muted";
         empty.style.fontSize = "13px";
         empty.textContent = "Henüz not yok. İlk notu senin misafirin bıraksın ✨";
         guestbook.appendChild(empty);
         return;
       }
-
-      for(const e of entries){
+      for (const e of entries) {
         const canEdit = (e.owner === deviceId);
-        const div = document.createElement("div");
+        const div     = document.createElement("div");
         div.className = "entry";
-
-        const when = e.createdAtMs ? new Date(e.createdAtMs).toLocaleString("tr-TR") : "";
-        const edited = e.editedAtMs ? " (düzenlendi)" : "";
-
+        const when    = e.createdAtMs ? new Date(e.createdAtMs).toLocaleString("tr-TR") : "";
+        const edited  = e.editedAtMs  ? " (düzenlendi)" : "";
         div.innerHTML = `
           <div class="entry-head">
             <div>
@@ -1469,76 +1276,57 @@ footer{
               <div class="when">${escapeHTML(when)}${edited}</div>
             </div>
             <div class="entry-actions">
-              ${canEdit ? `<button class="mini-btn" data-act="edit" data-id="${e.id}" type="button">Düzenle</button>` : ``}
-              ${canEdit ? `<button class="mini-btn danger" data-act="del" data-id="${e.id}" type="button">Sil</button>` : ``}
+              ${canEdit ? `<button class="mini-btn" data-act="edit" data-id="${e.id}" type="button">Düzenle</button>` : ""}
+              ${canEdit ? `<button class="mini-btn danger" data-act="del" data-id="${e.id}" type="button">Sil</button>` : ""}
             </div>
           </div>
-          <div class="msg">${escapeHTML(e.msg || "💛")}</div>
-        `;
+          <div class="msg">${escapeHTML(e.msg || "💛")}</div>`;
         guestbook.appendChild(div);
       }
     }
 
-    // Live listen
     const qNotes = query(NOTES_COL, orderBy("createdAt", "desc"), limit(60));
     onSnapshot(qNotes, (snap) => {
-      const entries = snap.docs.map(d => {
+      renderEntries(snap.docs.map(d => {
         const data = d.data();
         return {
-          id: d.id,
-          name: data.name || "",
-          msg: data.msg || "",
-          owner: data.owner || "",
+          id:          d.id,
+          name:        data.name  || "",
+          msg:         data.msg   || "",
+          owner:       data.owner || "",
           createdAtMs: data.createdAt?.toMillis?.() || null,
-          editedAtMs: data.editedAt?.toMillis?.() || null
+          editedAtMs:  data.editedAt?.toMillis?.()  || null
         };
-      });
-      renderEntries(entries);
+      }));
     });
 
-    noteForm.addEventListener("submit", async (e)=>{
+    noteForm.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const name = (guestName.value || "").trim();
+      const msg  = (guestMsg.value  || "").trim();
 
-      const name = (guestName.value||"").trim();
-      const msg  = (guestMessage.value||"").trim();
-
-      if(!name){
+      if (!name) {
         guestName.focus();
         guestName.style.borderColor = "rgba(239,68,68,.55)";
-        guestName.style.boxShadow = "0 0 0 4px rgba(239,68,68,.12)";
-        setTimeout(()=>{
-          guestName.style.borderColor = "";
-          guestName.style.boxShadow = "";
-        }, 1200);
+        guestName.style.boxShadow   = "0 0 0 4px rgba(239,68,68,.12)";
+        setTimeout(() => { guestName.style.borderColor = ""; guestName.style.boxShadow = ""; }, 1200);
         return;
       }
 
       const mode = submitBtn.dataset.mode || "new";
-
-      try{
-        if(mode === "edit" && submitBtn.dataset.editId){
-          const id = submitBtn.dataset.editId;
-          await updateDoc(doc(db, "guestbookNotes", id), {
-            name,
-            msg,
-            editedAt: serverTimestamp()
+      try {
+        if (mode === "edit" && submitBtn.dataset.editId) {
+          await updateDoc(doc(db, "guestbookNotes", submitBtn.dataset.editId), {
+            name, msg, editedAt: serverTimestamp()
           });
           flashToast("Not güncellendi ✅");
           resetForm();
           return;
         }
-
-        await addDoc(NOTES_COL, {
-          name,
-          msg,
-          owner: deviceId,
-          createdAt: serverTimestamp(),
-          editedAt: null
-        });
-
+        await addDoc(NOTES_COL, { name, msg, owner: deviceId, createdAt: serverTimestamp(), editedAt: null });
         flashToast("Not eklendi 💛");
         resetForm();
-      }catch(err){
+      } catch (err) {
         console.error(err);
         flashToast("Bir hata oluştu. Tekrar dener misin?");
       }
@@ -1546,51 +1334,38 @@ footer{
 
     clearBtn.addEventListener("click", resetForm);
 
-    guestbook.addEventListener("click", async (e)=>{
+    guestbook.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-act]");
-      if(!btn) return;
+      if (!btn) return;
+      const { act, id } = btn.dataset;
 
-      const act = btn.dataset.act;
-      const id  = btn.dataset.id;
-
-      if(act === "del"){
-        if(confirm("Notu silmek istediğine emin misin?")){
-          try{
+      if (act === "del") {
+        if (confirm("Notu silmek istediğine emin misin?")) {
+          try {
             await deleteDoc(doc(db, "guestbookNotes", id));
             flashToast("Not silindi 🗑️");
             resetForm();
-          }catch(err){
+          } catch (err) {
             console.error(err);
             flashToast("Silinemedi. Yetkin olmayabilir.");
           }
         }
       }
 
-      if(act === "edit"){
+      if (act === "edit") {
         const card = btn.closest(".entry");
-        const who = card?.querySelector(".who")?.textContent || "";
-        const msg = card?.querySelector(".msg")?.textContent || "";
-
-        guestName.value = who;
-        guestMessage.value = (msg === "💛") ? "" : msg;
-        submitBtn.textContent = "Kaydet ✅";
-        submitBtn.dataset.mode = "edit";
+        const who  = card?.querySelector(".who")?.textContent || "";
+        const msg  = card?.querySelector(".msg")?.textContent || "";
+        guestName.value          = who;
+        guestMsg.value           = (msg === "💛") ? "" : msg;
+        submitBtn.textContent    = "Kaydet ✅";
+        submitBtn.dataset.mode   = "edit";
         submitBtn.dataset.editId = id;
-
         guestName.focus();
-        document.getElementById("not").scrollIntoView({behavior:"smooth", block:"start"});
+        $("not").scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
-
-    /********************
-     * INIT
-     ********************/
-    // Hash ile gelirse otomatik aç
-    if(location.hash && location.hash !== "#top"){
-      setTimeout(openInvite, 250);
-    }
   </script>
 
 </body>
 </html>
-
