@@ -128,6 +128,61 @@ section { padding: 64px 0 }
 }
 
 /* ══════════════════════════════════════
+   MÜZİK — video üstü ses butonu
+══════════════════════════════════════ */
+#soundHint {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  padding: 11px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(0,0,0,.38);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,.90);
+  font-size: 13px;
+  letter-spacing: .06em;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: hintPop 3s ease-in-out infinite;
+  transition: opacity .4s ease;
+  user-select: none;
+}
+@keyframes hintPop {
+  0%, 100% { opacity: .70; }
+  50%       { opacity: 1;   }
+}
+#soundHint.hidden { opacity: 0; pointer-events: none; }
+
+/* ── Topbar müzik butonu ── */
+#musicBtn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.82);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: color .2s ease, border-color .2s ease;
+  user-select: none;
+}
+#musicBtn:hover  { color: var(--ink); border-color: rgba(0,0,0,.18); }
+#musicBtn.muted  { color: var(--muted); }
+
+/* ══════════════════════════════════════
    TOPBAR
 ══════════════════════════════════════ */
 .topbar {
@@ -705,9 +760,16 @@ footer {
       playsinline
       preload="auto"
     >
-      <source src="Açılış.mp4" type="video/mp4" />
+      <source src="acilis.mp4" type="video/mp4" />
     </video>
+    <!-- Kullanıcı dokunuşuyla ses kilidi açılır -->
+    <button id="soundHint" type="button">🔊 Müzik için dokun</button>
   </div>
+
+  <!-- Arkaplan müziği — video bittikten sonra JS başlatır -->
+  <audio id="bgMusic" loop preload="none">
+    <source src="assets/music.mp3" type="audio/mpeg" />
+  </audio>
 
   <!-- ═══════════════════════════════════════
        TOPBAR
@@ -718,7 +780,10 @@ footer {
         <span class="dot" aria-hidden="true"></span>
         <span><strong>30 Mayıs 2026</strong> • 19:00 • Gaziantep</span>
       </a>
-      <a class="badge" href="#not" title="Not bırak">💌 Not Bırak</a>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="musicBtn" type="button" aria-label="Müziği aç/kapat">🎵 Müzik</button>
+        <a class="badge" href="#not" title="Not bırak">💌 Not Bırak</a>
+      </div>
     </div>
   </div>
 
@@ -939,6 +1004,117 @@ footer {
     </div>
   </main>
 
+  <!-- ═══════════════════════════════════════
+       VIDEO INTRO — Firebase'den bağımsız,
+       plain script. File:// protokolünde de çalışır.
+  ═══════════════════════════════════════ -->
+  <script>
+    (function () {
+      var videoIntro = document.getElementById("videoIntro");
+      var introVideo = document.getElementById("introVideo");
+      var main       = document.getElementById("main");
+      var bgMusic    = document.getElementById("bgMusic");
+      var musicBtn   = document.getElementById("musicBtn");
+      var soundHint  = document.getElementById("soundHint");
+      var done       = false;
+      var musicUnlocked = false;
+
+      /* ── Müzik kilidi aç (ilk kullanıcı dokunuşu) ── */
+      function unlockMusic() {
+        if (musicUnlocked) return;
+        musicUnlocked = true;
+
+        /* Hint butonu gizle */
+        if (soundHint) soundHint.classList.add("hidden");
+
+        bgMusic.volume = 0.55;
+        bgMusic.currentTime = 0;
+        bgMusic.play().catch(function () {});
+
+        /* Topbar butonunu "çalıyor" duruma getir */
+        if (musicBtn) musicBtn.textContent = "🔇 Sessiz";
+      }
+
+      /* Video ekranına dokunuşta müziği aç */
+      if (soundHint) {
+        soundHint.addEventListener("click", function (e) {
+          e.stopPropagation();
+          unlockMusic();
+        });
+      }
+      /* Ekranın herhangi yerine dokunulursa da açılsın */
+      videoIntro.addEventListener("click", unlockMusic, { once: true });
+
+      /* ── Topbar müzik butonu (ana sitede) ── */
+      if (musicBtn) {
+        musicBtn.addEventListener("click", function () {
+          if (!musicUnlocked) {
+            /* İlk kez basıldıysa kilidi aç */
+            unlockMusic();
+            return;
+          }
+          if (bgMusic.paused) {
+            bgMusic.play().catch(function () {});
+            musicBtn.textContent = "🔇 Sessiz";
+          } else {
+            bgMusic.pause();
+            musicBtn.textContent = "🎵 Müzik";
+          }
+        });
+      }
+
+      /* ── Video → Ana içerik geçişi ── */
+      function transitionToMain() {
+        if (done) return;
+        done = true;
+
+        videoIntro.classList.add("fading");
+
+        setTimeout(function () {
+          main.style.display = "block";
+          document.body.classList.add("ready");
+
+          /* Müzik zaten açıksa devam et, değilse tekrar dene */
+          if (musicUnlocked && bgMusic.paused) {
+            bgMusic.play().catch(function () {});
+          }
+
+          setTimeout(function () {
+            videoIntro.style.display = "none";
+
+            var io = new IntersectionObserver(function (entries) {
+              entries.forEach(function (ent) {
+                if (ent.isIntersecting) {
+                  ent.target.classList.add("in");
+                  io.unobserve(ent.target);
+                }
+              });
+            }, { threshold: 0.12 });
+            document.querySelectorAll("[data-reveal]").forEach(function (el) {
+              io.observe(el);
+            });
+          }, 80);
+
+        }, 680);
+      }
+
+      introVideo.addEventListener("ended", transitionToMain);
+      introVideo.addEventListener("error", transitionToMain);
+
+      var safety = setTimeout(transitionToMain, 90000);
+      introVideo.addEventListener("ended", function () { clearTimeout(safety); });
+      introVideo.addEventListener("error", function () { clearTimeout(safety); });
+
+      var p = introVideo.play();
+      if (p && typeof p.then === "function") {
+        p.catch(function () {
+          clearTimeout(safety);
+          transitionToMain();
+        });
+      }
+    })();
+  </script>
+
   <script type="module">
     /* ══════════════════════════════════════════════
      * FIREBASE (Firestore)
@@ -1032,67 +1208,6 @@ footer {
       let d = localStorage.getItem(DEVICE_KEY);
       if (!d) { d = uid(); localStorage.setItem(DEVICE_KEY, d); }
       return d;
-    }
-
-    /* ══════════════════════════════════════════════
-     * VIDEO INTRO → ANA SITEYE GEÇİŞ
-     * ══════════════════════════════════════════════ */
-    const videoIntro = $("videoIntro");
-    const introVideo = $("introVideo");
-    const main       = $("main");
-
-    function startRevealObserver() {
-      const io = new IntersectionObserver((entries) => {
-        for (const ent of entries) {
-          if (ent.isIntersecting) { ent.target.classList.add("in"); io.unobserve(ent.target); }
-        }
-      }, { threshold: 0.12 });
-      document.querySelectorAll("[data-reveal]").forEach(el => io.observe(el));
-    }
-
-    let transitionDone = false;
-
-    function transitionToMain() {
-      /* Çift çağrımı önle */
-      if (transitionDone) return;
-      transitionDone = true;
-
-      /* 1. Beyaz fade başlat */
-      videoIntro.classList.add("fading");
-
-      /* 2. Fade tamamlandıktan sonra ana içeriği göster */
-      setTimeout(() => {
-        main.style.display = "block";
-        document.body.classList.add("ready"); /* scroll kilidi kalkar, main + topbar görünür */
-
-        /* 3. Kısa gecikme sonra intro tamamen kaldır */
-        setTimeout(() => {
-          videoIntro.remove();
-          startRevealObserver();
-        }, 80);
-
-      }, 680); /* fade süresiyle (.65s = 650ms) örtüşür */
-    }
-
-    /* Video bitişinde geçiş yap */
-    introVideo.addEventListener("ended", transitionToMain);
-
-    /* Video yüklenemez veya hata verirse de geçiş yap */
-    introVideo.addEventListener("error", transitionToMain);
-
-    /* Güvenlik: video 60 saniye içinde bitmezse geçiş yap */
-    const safetyTimer = setTimeout(transitionToMain, 60000);
-    introVideo.addEventListener("ended", () => clearTimeout(safetyTimer));
-    introVideo.addEventListener("error", () => clearTimeout(safetyTimer));
-
-    /* Autoplay engellenmişse (ses kapalı olsa bile bazı tarayıcılar) fallback */
-    const playPromise = introVideo.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        /* Otomatik oynatma engellenirse video başlamaz — ana siteye doğrudan geç */
-        clearTimeout(safetyTimer);
-        transitionToMain();
-      });
     }
 
     /* ══════════════════════════════════════════════
